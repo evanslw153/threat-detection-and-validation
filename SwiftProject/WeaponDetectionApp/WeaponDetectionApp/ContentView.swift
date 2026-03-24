@@ -11,9 +11,10 @@ struct ContentView: View
 {
     var body: some View
     {
-        VStack(spacing: 10)
+        ZStack
         {
-            
+            Color(.lightGray)
+                .ignoresSafeArea()
         }
         
     }
