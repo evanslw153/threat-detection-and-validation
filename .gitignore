@@ -2,8 +2,8 @@
 __pycache__/
 *.py[codz]
 *$py.class
-*.DS_Store
-
+joshualangaman/.DS_Store
+joshualangaman/SwiftProject/.DS_Store
 # C extensions
 *.so
 
