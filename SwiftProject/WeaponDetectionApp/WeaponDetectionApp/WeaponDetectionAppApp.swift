@@ -8,10 +8,15 @@
 import SwiftUI
 
 @main
-struct WeaponDetectionAppApp: App {
-    var body: some Scene {
-        WindowGroup {
+struct WeaponDetectionAppApp: App
+{
+    var body: some Scene
+    {
+        WindowGroup
+        {
             ContentView()
         }
+        //.modelContainer(for:[])
+        
     }
 }
