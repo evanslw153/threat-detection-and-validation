@@ -33,7 +33,8 @@ struct SignInView: View
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
 
-            if let errorMessage = authViewModel.errorMessage {
+            if let errorMessage = authViewModel.errorMessage
+            {
                 Text(errorMessage)
                     .font(.footnote)
                     .foregroundColor(.red)
@@ -41,17 +42,25 @@ struct SignInView: View
                     .padding(.horizontal)
             }
 
-            Button {
-                Task {
+            Button
+            {
+                Task
+                {
                     await authViewModel.signIn()
                 }
-            } label: {
-                HStack {
-                    if authViewModel.isLoading {
+            }
+            label:
+            {
+                HStack
+                {
+                    if authViewModel.isLoading
+                    {
                         ProgressView()
-                    } else {
+                    }
+                    else
+                    {
                         Image(systemName: "person.crop.circle.badge.checkmark")
-                        Text("Sign in with Microsoft")
+                        Text("Sign in with Microsoft") // link the actual microsoft account to this log in to be able to see the photos. 
                             .fontWeight(.semibold)
                     }
                 }
