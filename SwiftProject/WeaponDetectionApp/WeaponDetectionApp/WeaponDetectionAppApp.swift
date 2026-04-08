@@ -16,7 +16,7 @@ struct WeaponDetectionAppApp: App
         {
             ContentView()
         }
-        //.modelContainer(for:[])
+        //.modelContainer(for:[]) this is for when we add the actual microsift account. 
         
     }
 }

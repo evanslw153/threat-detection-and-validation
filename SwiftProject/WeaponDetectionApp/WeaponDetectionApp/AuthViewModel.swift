@@ -10,27 +10,32 @@ import SwiftUI
 import Combine
 
 @MainActor
-final class AuthViewModel: ObservableObject {
+final class AuthViewModel: ObservableObject
+{
     @Published var isSignedIn = false
     @Published var isLoading = false
     @Published var errorMessage: String? = nil
     @Published var displayName: String = ""
 
-    func restoreSessionIfPossible() async {
+    func restoreSessionIfPossible() async
+    {
         let savedName = UserDefaults.standard.string(forKey: "savedDisplayName")
         let savedSignedIn = UserDefaults.standard.bool(forKey: "isSignedIn")
 
-        if savedSignedIn, let savedName {
+        if savedSignedIn, let savedName
+        {
             self.displayName = savedName
             self.isSignedIn = true
         }
     }
 
-    func signIn() async {
+    func signIn() async
+    {
         isLoading = true
         errorMessage = nil
 
-        do {
+        do
+    {
             try await Task.sleep(nanoseconds: 800_000_000)
 
             let fakeName = "Signed In User"
