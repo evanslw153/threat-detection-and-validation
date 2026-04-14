@@ -25,8 +25,11 @@ struct DashboardView: View
                     .font(.title3)
                     .foregroundStyle(.secondary)
 
-                Text("This is the dashboard shell.") // will need to change this script.
-                    .foregroundStyle(.secondary)
+                NavigationLink("View Detection Photos")
+                {
+                    PhotosView(auth: authViewModel)
+                }
+                .buttonStyle(.borderedProminent)
 
                 Button("Sign Out")
                 {
@@ -37,7 +40,6 @@ struct DashboardView: View
             .padding()
             .navigationTitle("Dashboard")
             
-            // from here we need to add clickables that show recent notifications, past notifications, etc.
         }
     }
 }

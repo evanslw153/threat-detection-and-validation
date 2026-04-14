@@ -7,56 +7,107 @@
 
 import Foundation
 import SwiftUI
+import MSAL
 import Combine
+
 
 @MainActor
 final class AuthViewModel: ObservableObject
 {
     @Published var isSignedIn = false
     @Published var isLoading = false
-    @Published var errorMessage: String? = nil
+    @Published var errorMessage: String?
     @Published var displayName: String = ""
-
-    func restoreSessionIfPossible() async
+    
+    private let clientID = "<THE AZURE CLIENT ID>"
+    private let tenantID = "common"
+    private let scopes = ["User.Read", "Files.Read"]
+    
+    private var application: MSALPublicClientApplication?
+    
+    init()
     {
-        let savedName = UserDefaults.standard.string(forKey: "savedDisplayName")
-        let savedSignedIn = UserDefaults.standard.bool(forKey: "isSignedIn")
-
-        if savedSignedIn, let savedName
+        let authority = try? MSALAADAuthority(
+            url: URL(string: "https://login.microsoftonline.com/\(tenantID)")!
+            )
+        let config = MSALPublicClientApplicationConfig(
+            clientId: clientID,
+            redirectUri: nil,
+            authority: authority
+            )
+        application = try? MSALPublicClientApplication(configuration: config)
+        
+    }
+    func restoreSessionIfPossible() async {
+        guard let app = application else { return }
+        
+        let accounts = try? app.allAccounts()
+        guard let account = accounts?.first else { return }
+        
+        let params = MSALSilentTokenParameters(
+            scopes: scopes,
+            account: account
+        )
+        do
         {
-            self.displayName = savedName
-            self.isSignedIn = true
+            let result = try await app.acquireTokenSilent(with: params)
+            displayName = result.account.username ?? "User"
+            isSignedIn = true
+        }
+        catch
+        {
+            isSignedIn = false
         }
     }
-
-    func signIn() async
+    func signIn () async
     {
+        guard let app = application else { return }
+        
         isLoading = true
         errorMessage = nil
-
+        
+        let params = MSALInteractiveTokenParameters(
+        scopes: scopes,
+        webviewParameters: MSALWebviewParameters(authPresentationViewController: UIApplication.shared.rootVC)
+        )
+        
         do
-    {
-            try await Task.sleep(nanoseconds: 800_000_000)
-
-            let fakeName = "Signed In User"
-            self.displayName = fakeName
-            self.isSignedIn = true
-
-            UserDefaults.standard.set(true, forKey: "isSignedIn")
-            UserDefaults.standard.set(fakeName, forKey: "savedDisplayName")
-        } catch {
-            errorMessage = "Sign-in failed. Please try again."
+        {
+            let result = try await app.acquireToken(with: params)
+            displayName = result.account.username ?? "User"
+            isSignedIn = true
         }
-
+        catch
+        {
+            errorMessage = "Microsoft sign-in failed. Please try again."
+        }
+        
         isLoading = false
+        
     }
-
-    func signOut() {
+    func signOut ()
+    {
+        guard let app = application else { return }
+        let accounts = try? app.allAccounts()
+        accounts?.forEach { try? app.remove($0)}
+        
         isSignedIn = false
         displayName = ""
-        errorMessage = nil
-
-        UserDefaults.standard.removeObject(forKey: "savedDisplayName")
-        UserDefaults.standard.set(false, forKey: "isSignedIn")
+        
     }
+    func accessToken() async throws -> String
+    {
+        guard let app = application,
+              let account = try app.allAccounts().first
+        else
+        {
+            throw URLError(.userAuthenticationRequired)
+        }
+        let params = MSALSilentTokenParameters(scopes: scopes, account: account)
+        let result = try await app.acquireTokenSilent(with: params)
+        return result.accessToken
+        
+    }
+    
 }
+
