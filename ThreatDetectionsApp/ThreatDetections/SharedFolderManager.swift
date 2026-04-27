@@ -89,19 +89,24 @@ class SharedFolderManager: ObservableObject {
                let value = json["value"] as? [[String: Any]] {
 
                 for item in value {
-                    if let remoteItem = item["remoteItem"] as? [String: Any],
-                       let name = remoteItem["name"] as? String,
-                       let id = remoteItem["id"] as? String,
-                       name == self.sharedFolderName {
+                    let remote = item["remoteItem"] as? [String: Any]
 
+                    let name = remote?["name"] as? String
+                        ?? item["name"] as? String
+
+                    let id = remote?["id"] as? String
+                        ?? item["id"] as? String
+
+                    if name == self.sharedFolderName, let id = id {
                         DispatchQueue.main.async {
                             self.folderID = id
-                            self.loadImages(token: token)   // <-- ADD THIS
+                            self.loadImages(token: token)
                         }
                         completion(true)
                         return
                     }
                 }
+
             }
 
             print("Shared user: folder not found in sharedWithMe")
