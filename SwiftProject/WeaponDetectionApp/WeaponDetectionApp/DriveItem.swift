@@ -1,3 +1,10 @@
+//
+//  AuthViewModel.swift
+//  WeaponDetectionApp
+//
+//  Created by Joshua Langaman on 4/7/26.
+//
+
 import Foundation
 
 public struct DriveItem: Identifiable, Codable, Equatable

@@ -27,7 +27,7 @@ struct PhotosView: View
                 LazyVGrid(columns: columns, spacing: 12)
                 {
                     ForEach(vm.photos, id: \.id) { photo in
-                        if let imageURL = URL(string: "https://onedrive.live.com/?id=%2Fpersonal%2F9f3712efaee9292b%2FDocuments%2FThreatDetections&viewid=2429d58e%2D9f65%2D41f4%2D9ef1%2De163800f5fc4&view=0")
+                        if let imageURL = URL(string: "Change this link to the folder when we find out how to show it on the app.")
                         {
                             AsyncImage(url: imageURL) { image in
                                 image
