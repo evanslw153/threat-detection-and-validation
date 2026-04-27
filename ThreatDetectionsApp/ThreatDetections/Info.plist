@@ -14,6 +14,16 @@
 				<string>msauth.com.evanslw153.WeaponDetectionApp1</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>msauth</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>msauth.com.evanslw153.WeaponDetectionApp</string>
+			</array>
+		</dict>
 	</array>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
