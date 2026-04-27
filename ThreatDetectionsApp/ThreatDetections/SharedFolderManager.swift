@@ -223,6 +223,8 @@ class SharedFolderManager: ObservableObject {
     @Published var folderID: String?
     @Published var driveID: String?        // <-- NEW: needed for shared folders
     @Published var images: [DriveItem] = []
+    
+    static let shared = SharedFolderManager()
 
     let sharedFolderName = "ThreatDetections"
 
