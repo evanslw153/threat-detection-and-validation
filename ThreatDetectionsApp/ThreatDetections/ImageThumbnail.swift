@@ -10,6 +10,8 @@ import SwiftUI
 struct ImageThumbnail: View {
     let item: DriveItem
     let token: String
+    
+    @EnvironmentObject var shared: SharedFolderManager
     @State private var image: UIImage?
 
     var body: some View {
@@ -30,7 +32,16 @@ struct ImageThumbnail: View {
     }
 
     func loadThumbnail() {
-        let url = URL(string: "https://graph.microsoft.com/v1.0/me/drive/items/\(item.id)/thumbnails/0/medium/content")!
+        let base: String
+
+        if let driveID = SharedFolderManager.shared.driveID {
+            base = "https://graph.microsoft.com/v1.0/drives/\(driveID)/items/\(item.id)"
+        } else {
+            base = "https://graph.microsoft.com/v1.0/me/drive/items/\(item.id)"
+        }
+
+        let url = URL(string: "\(base)/thumbnails/0/medium/content")!
+
         var req = URLRequest(url: url)
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 

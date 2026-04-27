@@ -9,12 +9,12 @@ import SwiftUI
 
 @main
 struct YourApp: App {
-    @StateObject var shared = SharedFolderManager()
+    @StateObject var shared = SharedFolderManager.shared
     
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environmentObject(shared)   // <-- ADD THIS
+                .environmentObject(shared)
         }
     }
 }
