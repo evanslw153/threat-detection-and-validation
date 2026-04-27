@@ -8,9 +8,9 @@
 import UIKit
 
 extension UIApplication {
-    /// Returns the root view controller of the current key window if available,
-    /// otherwise falls back to the first window's rootViewController,
-    /// and finally an empty UIViewController() as a last resort.
+    // Returns the root view controller of the current key window if available,
+    // otherwise falls back to the first window's rootViewController,
+    //and finally an empty UIViewController() as a last resort.
     var rootVC: UIViewController {
         // Collect all windows from connected window scenes
         let windows = connectedScenes

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import MSAL
 
 @main
 struct WeaponDetectionAppApp: App
@@ -15,8 +16,11 @@ struct WeaponDetectionAppApp: App
         WindowGroup
         {
             ContentView()
+                .onOpenURL
+                {
+                    url in MSALPublicClientApplication.handleMSALResponse( url, sourceApplication: nil)
+                }
         }
-        //.modelContainer(for:[]) this is for when we add the actual microsift account. 
         
     }
 }
