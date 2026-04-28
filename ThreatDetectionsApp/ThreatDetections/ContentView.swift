@@ -7,14 +7,20 @@
 
 import SwiftUI
 
-struct ContentView: View {
+struct ContentView: View
+{
     @ObservedObject var auth = AuthManager.shared
 
-    var body: some View {
-        NavigationView {
-            if auth.accessToken == nil {
+    var body: some View
+    {
+        Group
+        {
+            if auth.accessToken == nil
+            {
                 SignInView()
-            } else {
+            }
+            else
+            {
                 ImageGridView()
             }
         }
