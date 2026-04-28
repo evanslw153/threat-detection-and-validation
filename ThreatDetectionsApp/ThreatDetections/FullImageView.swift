@@ -13,26 +13,38 @@ struct FullImageView: View {
     
     @EnvironmentObject var shared: SharedFolderManager
     @State private var image: UIImage?
+    @State private var isLoading = true
+    
+    let columns = [GridItem(.adaptive(minimum: 120))]
 
-    var body: some View {
-        Group {
-            if let img = image {
+    var body: some View
+    {
+        Group
+        {
+            if let img = image
+            {
                 Image(uiImage: img)
                     .resizable()
                     .scaledToFit()
-            } else {
+            }
+            else
+            {
                 ProgressView("Loading...")
             }
         }
         .onAppear(perform: loadFullImage)
     }
 
-    func loadFullImage() {
+    func loadFullImage()
+    {
         let base: String
 
-        if let driveID = SharedFolderManager.shared.driveID {
+        if let driveID = SharedFolderManager.shared.driveID
+        {
             base = "https://graph.microsoft.com/v1.0/drives/\(driveID)/items/\(item.id)"
-        } else {
+        }
+        else
+        {
             base = "https://graph.microsoft.com/v1.0/me/drive/items/\(item.id)"
         }
 
