@@ -57,6 +57,7 @@ struct SignInView: View
             .buttonStyle(.borderedProminent)
             .disabled(isSigningIn)
             .padding(.horizontal)
+            
             Spacer()
 
             Text("Version 1")
