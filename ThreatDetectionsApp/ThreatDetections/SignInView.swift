@@ -2,7 +2,7 @@
 //  SignInView.swift
 //  WeaponDetectionApp
 //
-//  Combined by Josh and Lane
+// Created by Lane Evans and Joshua Langaman on 4/21/26.
 
 import SwiftUI
 

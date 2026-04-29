@@ -2,7 +2,7 @@
 //  AuthManager.swift
 //  ThreatDetectionsApp
 //
-//  Created by Lane Evans on 4/21/26.
+//  Created by Lane Evans and Joshua Langaman on 4/21/26.
 //
 
 import Foundation
@@ -10,15 +10,18 @@ import MSAL
 import Combine
 import UIKit
 
-class AuthManager: ObservableObject {
+class AuthManager: ObservableObject
+{
     static let shared = AuthManager()
 
     @Published var accessToken: String?
     @Published var userEmail: String?
     private var applicationContext: MSALPublicClientApplication?
 
-    private init() {
-        do {
+    private init()
+    {
+        do
+        {
             let authorityURL = URL(string: "https://login.microsoftonline.com/common")!
             let authority = try MSALAuthority(url: authorityURL)
 
@@ -29,13 +32,18 @@ class AuthManager: ObservableObject {
             )
 
             applicationContext = try MSALPublicClientApplication(configuration: config)
-        } catch {
+        }
+        catch
+        {
             print("MSAL init error:", error)
         }
     }
 
-    func signIn(presenting: UIViewController, completion: @escaping (Bool) -> Void) {
-        guard let app = applicationContext else {
+    func signIn(presenting: UIViewController, completion: @escaping (Bool) -> Void)
+    {
+        guard let app = applicationContext
+        else
+        {
             completion(false)
             return
         }
@@ -47,13 +55,17 @@ class AuthManager: ObservableObject {
         )
 
         app.acquireToken(with: params) { result, error in
-            if let token = result?.accessToken {
-                DispatchQueue.main.async {
+            if let token = result?.accessToken
+            {
+                DispatchQueue.main.async
+                {
                     self.accessToken = token
                     self.userEmail = result?.account.username
                     completion(true)
                 }
-            } else {
+            }
+            else
+            {
                 print("Sign-in error:", error ?? "Unknown")
                 completion(false)
             }

@@ -2,26 +2,33 @@
 //  ImageThumbnail.swift
 //  ThreatDetectionsApp
 //
-//  Created by Lane Evans on 4/21/26.
+//  Created by Lane Evans and Joshua Langaman on 4/21/26.
 //
 
 import SwiftUI
 
-struct ImageThumbnail: View {
+struct ImageThumbnail: View
+{
     let item: DriveItem
     let token: String
     
     @EnvironmentObject var shared: SharedFolderManager
     @State private var image: UIImage?
 
-    var body: some View {
-        NavigationLink(destination: FullImageView(item: item, token: token)) {
-            Group {
-                if let img = image {
+    var body: some View
+    {
+        NavigationLink(destination: FullImageView(item: item, token: token))
+        {
+            Group
+            {
+                if let img = image
+                {
                     Image(uiImage: img)
                         .resizable()
                         .scaledToFill()
-                } else {
+                }
+                else
+                {
                     Rectangle().fill(Color.gray.opacity(0.3))
                 }
             }
@@ -31,12 +38,16 @@ struct ImageThumbnail: View {
         }
     }
 
-    func loadThumbnail() {
+    func loadThumbnail()
+    {
         let base: String
 
-        if let driveID = SharedFolderManager.shared.driveID {
+        if let driveID = SharedFolderManager.shared.driveID
+        {
             base = "https://graph.microsoft.com/v1.0/drives/\(driveID)/items/\(item.id)"
-        } else {
+        }
+        else
+        {
             base = "https://graph.microsoft.com/v1.0/me/drive/items/\(item.id)"
         }
 

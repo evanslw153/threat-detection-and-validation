@@ -2,7 +2,7 @@
 //  ContentView.swift
 //  ThreatDetectionsApp
 //
-//  Created by Lane Evans on 4/21/26.
+//  Created by Lane Evans and Joshua Langaman on 4/21/26.
 //
 
 import SwiftUI
