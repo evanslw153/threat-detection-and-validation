@@ -2,12 +2,13 @@
 //  FullImageView.swift
 //  ThreatDetectionsApp
 //
-//  Created by Lane Evans on 4/21/26.
+//  Created by Lane Evans and Joshua Langaman on 4/21/26.
 //
 
 import SwiftUI
 
-struct FullImageView: View {
+struct FullImageView: View
+{
     let item: DriveItem
     let token: String
     
@@ -54,7 +55,8 @@ struct FullImageView: View {
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
         URLSession.shared.dataTask(with: req) { data, _, _ in
-            if let data = data, let ui = UIImage(data: data) {
+            if let data = data, let ui = UIImage(data: data)
+            {
                 DispatchQueue.main.async { image = ui }
             }
         }.resume()

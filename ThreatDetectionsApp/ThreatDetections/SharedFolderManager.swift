@@ -2,20 +2,22 @@
 //  SharedFolderManager.swift
 //  ThreatDetectionsApp
 //
-//  Created by Lane Evans on 4/21/26.
+//  Created by Lane Evans and Joshua Langaman on 4/21/26.
 //
 
 import Foundation
 import Combine
 
-struct DriveItem: Codable {
+struct DriveItem: Codable
+{
     let id: String
     let name: String
 }
 
-class SharedFolderManager: ObservableObject {
+class SharedFolderManager: ObservableObject
+{
     @Published var folderID: String?
-    @Published var driveID: String?        // <-- NEW: needed for shared folders
+    @Published var driveID: String?
     @Published var images: [DriveItem] = []
     
     static let shared = SharedFolderManager()
@@ -25,12 +27,14 @@ class SharedFolderManager: ObservableObject {
     // ---------------------------------------------------------
     // MARK: LOAD SHARED FOLDER (OWNER + NON-OWNER)
     // ---------------------------------------------------------
-    func loadSharedFolder(token: String, userEmail: String, completion: @escaping (Bool) -> Void) {
+    func loadSharedFolder(token: String, userEmail: String, completion: @escaping (Bool) -> Void)
+    {
 
         // ---------------------------------------------------------
         // OWNER BRANCH
         // ---------------------------------------------------------
-        if userEmail.lowercased() == "laneevans2005100@outlook.com" {
+        if userEmail.lowercased() == "laneevans2005100@outlook.com"
+        {
             print("Owner detected — loading folder from root")
 
             let url = URL(string: "https://graph.microsoft.com/v1.0/me/drive/root/children")!
@@ -38,13 +42,15 @@ class SharedFolderManager: ObservableObject {
             req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
             URLSession.shared.dataTask(with: req) { data, _, error in
-                if let error = error {
+                if let error = error
+                {
                     print("root children error:", error)
                     completion(false)
                     return
                 }
 
-                guard let data = data else {
+                guard let data = data else
+                {
                     print("root children: no data")
                     completion(false)
                     return
@@ -56,21 +62,25 @@ class SharedFolderManager: ObservableObject {
                 guard
                     let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                     let value = json["value"] as? [[String: Any]]
-                else {
+                else
+                {
                     completion(false)
                     return
                 }
 
-                for item in value {
+                for item in value
+                {
                     let name = item["name"] as? String ?? "<no name>"
                     let id = item["id"] as? String ?? "<no id>"
 
                     print("root item:", name, "|", id)
 
-                    if name == self.sharedFolderName {
+                    if name == self.sharedFolderName
+                    {
                         print("Matched sharedFolderName:", name)
 
-                        DispatchQueue.main.async {
+                        DispatchQueue.main.async
+                        {
                             self.folderID = id
                             self.driveID = nil   // owner uses /me/drive
                             self.loadImages(token: token)
@@ -98,7 +108,9 @@ class SharedFolderManager: ObservableObject {
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
         URLSession.shared.dataTask(with: req) { data, _, _ in
-            guard let data = data else {
+            guard let data = data
+            else
+            {
                 completion(false)
                 return
             }
@@ -106,12 +118,14 @@ class SharedFolderManager: ObservableObject {
             guard
                 let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                 let value = json["value"] as? [[String: Any]]
-            else {
+            else
+            {
                 completion(false)
                 return
             }
 
-            for item in value {
+            for item in value
+            {
                 guard let remote = item["remoteItem"] as? [String: Any] else { continue }
 
                 let name = remote["name"] as? String
@@ -121,13 +135,15 @@ class SharedFolderManager: ObservableObject {
 
                 if name == self.sharedFolderName,
                    let id = id,
-                   let driveId = driveId {
+                   let driveId = driveId
+                {
 
                     print("Shared folder matched:", name ?? "<no name>")
                     print("remoteItem.id:", id)
                     print("remoteItem.driveId:", driveId)
 
-                    DispatchQueue.main.async {
+                    DispatchQueue.main.async
+                    {
                         self.folderID = id
                         self.driveID = driveId
                         self.loadImages(token: token)
@@ -146,20 +162,26 @@ class SharedFolderManager: ObservableObject {
     // ---------------------------------------------------------
     // MARK: LOAD DATE FOLDERS
     // ---------------------------------------------------------
-    func loadImages(token: String) {
-        guard let folderID = folderID else {
+    func loadImages(token: String)
+    {
+        guard let folderID = folderID
+        else
+        {
             print("loadImages: no folderID")
             return
         }
 
         let url: URL
 
-        if let driveID = driveID {
+        if let driveID = driveID
+        {
             // SHARED FOLDER
             url = URL(string:
                 "https://graph.microsoft.com/v1.0/drives/\(driveID)/items/\(folderID)/children"
             )!
-        } else {
+        }
+        else
+        {
             // OWNER
             url = URL(string:
                 "https://graph.microsoft.com/v1.0/me/drive/items/\(folderID)/children"
@@ -174,12 +196,15 @@ class SharedFolderManager: ObservableObject {
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
         URLSession.shared.dataTask(with: req) { data, _, error in
-            if let error = error {
+            if let error = error
+            {
                 print("loadImages error:", error)
                 return
             }
 
-            guard let data = data else {
+            guard let data = data
+            else
+            {
                 print("loadImages: no data")
                 return
             }
@@ -190,12 +215,14 @@ class SharedFolderManager: ObservableObject {
             guard
                 let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                 let value = json["value"] as? [[String: Any]]
-            else {
+            else
+            {
                 print("loadImages: JSON parse failed")
                 return
             }
 
-            for dict in value {
+            for dict in value
+            {
                 let name = dict["name"] as? String ?? "<no name>"
                 let hasFolder = dict["folder"] != nil
                 let hasFile = dict["file"] != nil
@@ -206,13 +233,15 @@ class SharedFolderManager: ObservableObject {
                 guard let id = dict["id"] as? String,
                       let name = dict["name"] as? String else { return nil }
 
-                if dict["folder"] != nil {
+                if dict["folder"] != nil
+                {
                     return DriveItem(id: id, name: name)
                 }
                 return nil
             }
 
-            DispatchQueue.main.async {
+            DispatchQueue.main.async
+            {
                 print("Found \(items.count) date folders")
                 self.images = items
             }
@@ -222,15 +251,19 @@ class SharedFolderManager: ObservableObject {
     // ---------------------------------------------------------
     // MARK: LOAD IMAGES INSIDE DATE FOLDER
     // ---------------------------------------------------------
-    func loadImagesInDateFolder(folderID: String, token: String, completion: @escaping ([DriveItem]) -> Void) {
+    func loadImagesInDateFolder(folderID: String, token: String, completion: @escaping ([DriveItem]) -> Void)
+    {
 
         let url: URL
 
-        if let driveID = driveID {
+        if let driveID = driveID
+        {
             url = URL(string:
                 "https://graph.microsoft.com/v1.0/drives/\(driveID)/items/\(folderID)/children"
             )!
-        } else {
+        }
+        else
+        {
             url = URL(string:
                 "https://graph.microsoft.com/v1.0/me/drive/items/\(folderID)/children"
             )!
@@ -240,7 +273,8 @@ class SharedFolderManager: ObservableObject {
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
         URLSession.shared.dataTask(with: req) { data, _, _ in
-            guard let data = data else {
+            guard let data = data else
+            {
                 completion([])
                 return
             }
@@ -248,7 +282,8 @@ class SharedFolderManager: ObservableObject {
             guard
                 let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                 let value = json["value"] as? [[String: Any]]
-            else {
+            else
+            {
                 completion([])
                 return
             }
@@ -257,7 +292,8 @@ class SharedFolderManager: ObservableObject {
                 guard let id = dict["id"] as? String,
                       let name = dict["name"] as? String else { return nil }
 
-                if dict["file"] != nil {
+                if dict["file"] != nil
+                {
                     return DriveItem(id: id, name: name)
                 }
                 return nil
