@@ -44,7 +44,7 @@ struct ImageGridView: View
             }
             else if shared.images.isEmpty
             {
-                Text("No items found in folder")
+                ProgressView("Loading Folders...")
             }
             else
             {
