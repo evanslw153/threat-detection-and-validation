@@ -18,7 +18,7 @@ struct ImageGridView: View
         {
             if shared.folderID == nil
             {
-                Text("Loading shared folder...")
+                ProgressView("Loading shared folder...")
                     .onAppear
                 {
                         if let token = auth.accessToken,
@@ -56,8 +56,24 @@ struct ImageGridView: View
                         Text(item.name)
                     }
                 }
-
             }
+        }
+        .toolbar
+        {
+            ToolbarItem(placement: .navigationBarTrailing)
+            {
+                Button("Sign Out")
+                {
+                    auth.accessToken = nil
+                    auth.userEmail = nil
+                    shared.folderID = nil
+                    shared.images = []
+                }
+                .tint(.blue)
+                .foregroundStyle(.blue)
+                
+            }
+            
         }
     }
 }
