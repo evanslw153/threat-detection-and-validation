@@ -597,7 +597,10 @@ class SharedFolderManager: ObservableObject {
 
                 if name == "labels.json" {
                     print("Found labels.json with id:", id)
-                    self.labelsFileID = id
+                    DispatchQueue.main.async {
+                        self.labelsFileID = id
+                    }
+
                     self.downloadLabelsFile(token: token, fileID: id)
                     return
                 }
@@ -664,7 +667,10 @@ class SharedFolderManager: ObservableObject {
                let id = json["id"] as? String {
 
                 print("Created labels.json with id:", id)
-                self.labelsFileID = id
+                DispatchQueue.main.async {
+                    self.labelsFileID = id
+                }
+
                 self.saveLabels(token: token)
             } else {
                 print("Failed to create labels.json")
