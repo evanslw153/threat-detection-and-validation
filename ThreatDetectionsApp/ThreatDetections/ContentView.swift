@@ -21,7 +21,11 @@ struct ContentView: View
             }
             else
             {
-                ImageGridView()
+                NavigationStack
+                {
+                    ImageGridView()
+                }
+                
             }
         }
     }
