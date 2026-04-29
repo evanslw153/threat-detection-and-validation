@@ -18,7 +18,7 @@ struct ImageGridView: View
         {
             if shared.folderID == nil
             {
-                ProgressView("Loading shared folder...")
+                ProgressView("Loading Folders...")
                     .onAppear
                 {
                         if let token = auth.accessToken,
