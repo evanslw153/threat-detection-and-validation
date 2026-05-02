@@ -12,7 +12,7 @@ struct FolderListView: View {
     @EnvironmentObject var shared: SharedFolderManager
 
     var body: some View {
-        List(shared.images, id: \.id) { item in
+        List(shared.dateFolders, id: \.id) { item in
             Button {
                 shared.selectedFolder = item
 

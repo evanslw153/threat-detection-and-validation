@@ -8,15 +8,20 @@
 import Foundation
 import Combine
 
-struct DriveItem: Codable, Identifiable, Hashable {
+struct DriveItem: Codable, Identifiable, Hashable, Equatable {
     let id: String
     let name: String
+}
+
+struct PendingReview: Equatable {
+    let item: DriveItem
+    let folderName: String
 }
 
 class SharedFolderManager: ObservableObject {
     @Published var folderID: String?          // ThreatDetections folder ID
     @Published var driveID: String?           // Drive ID (nil for owner)
-    @Published var images: [DriveItem] = []   // Date folders
+    @Published var dateFolders: [DriveItem] = []
 
     // NEW: selection + images for selected folder
     @Published var selectedFolder: DriveItem?
@@ -26,11 +31,17 @@ class SharedFolderManager: ObservableObject {
     // Labels
     @Published var labels: [String: String] = [:]   // "2026-04-13/image1.jpg": "ValidThreat"
     @Published var labelsFileID: String?           // labels.json file ID
+    
+    @Published var reviewQueue: [PendingReview] = []
+    @Published var currentReview: PendingReview? = nil
+
+    private var knownGlobalImageIDs: Set<String> = []
+    private var globalWatcherTimer: Timer?
 
     static let shared = SharedFolderManager()
 
     let sharedFolderName = "ThreatDetections"
-
+    
     // ---------------------------------------------------------
     // MARK: LOAD SHARED FOLDER (OWNER + NON-OWNER)
     // ---------------------------------------------------------
@@ -153,61 +164,37 @@ class SharedFolderManager: ObservableObject {
     // ---------------------------------------------------------
     // MARK: LOAD DATE FOLDERS
     // ---------------------------------------------------------
-    func loadImages(token: String) {
+    func loadImages(token: String, completion: @escaping ([DriveItem]) -> Void = { _ in }) {
         guard let folderID = folderID else {
-            print("loadImages: no folderID")
+            completion([])
             return
         }
 
         let url: URL
-
         if let driveID = driveID {
-            url = URL(string:
-                "https://graph.microsoft.com/v1.0/drives/\(driveID)/items/\(folderID)/children"
-            )!
+            url = URL(string: "https://graph.microsoft.com/v1.0/drives/\(driveID)/items/\(folderID)/children")!
         } else {
-            url = URL(string:
-                "https://graph.microsoft.com/v1.0/me/drive/items/\(folderID)/children"
-            )!
+            url = URL(string: "https://graph.microsoft.com/v1.0/me/drive/items/\(folderID)/children")!
         }
-
-        print("Using folderID:", folderID)
-        print("Using driveID:", driveID ?? "(owner)")
-        print("loadImages URL:", url.absoluteString)
 
         var req = URLRequest(url: url)
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
-        URLSession.shared.dataTask(with: req) { data, _, error in
-            if let error = error {
-                print("loadImages error:", error)
-                return
-            }
-
+        URLSession.shared.dataTask(with: req) { data, _, _ in
             guard let data = data else {
-                print("loadImages: no data")
+                completion([])
                 return
             }
-
-            print("Date folder list JSON:")
-            print(String(data: data, encoding: .utf8) ?? "Unable to decode")
 
             guard
                 let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                 let value = json["value"] as? [[String: Any]]
             else {
-                print("loadImages: JSON parse failed")
+                completion([])
                 return
             }
 
-            for dict in value {
-                let name = dict["name"] as? String ?? "<no name>"
-                let hasFolder = dict["folder"] != nil
-                let hasFile = dict["file"] != nil
-                print("child item:", name, "| folder:", hasFolder, "| file:", hasFile)
-            }
-
-            let items = value.compactMap { dict -> DriveItem? in
+            let folders = value.compactMap { dict -> DriveItem? in
                 guard let id = dict["id"] as? String,
                       let name = dict["name"] as? String else { return nil }
 
@@ -217,13 +204,16 @@ class SharedFolderManager: ObservableObject {
                 return nil
             }
 
+            completion(folders)
+
             DispatchQueue.main.async {
-                print("Found \(items.count) date folders")
-                self.images = items
+                // This drives your navigation pane
+                self.dateFolders = folders
             }
+
         }.resume()
     }
-
+    
     // ---------------------------------------------------------
     // MARK: LOAD IMAGES INSIDE DATE FOLDER
     // ---------------------------------------------------------
@@ -269,6 +259,7 @@ class SharedFolderManager: ObservableObject {
             }
 
             completion(items)
+
         }.resume()
     }
 
@@ -439,5 +430,94 @@ class SharedFolderManager: ObservableObject {
                 self.isLoadingImages = false
             }
         }
+    }
+    
+    func loadAllImages(token: String, completion: @escaping ([DriveItem]) -> Void) {
+        guard folderID != nil else {
+            completion([])
+            return
+        }
+
+        loadImages(token: token) { folders in
+            var allImages: [DriveItem] = []
+            var idToFolderName: [String: String] = [:]   // ⭐ track which image belongs to which folder
+            let group = DispatchGroup()
+
+            for folder in folders {
+                let folderName = folder.name
+
+                group.enter()
+                self.loadImagesInDateFolder(folderID: folder.id, token: token) { images in
+                    // collect images and map IDs → folder name
+                    for img in images {
+                        allImages.append(img)
+                        idToFolderName[img.id] = folderName
+                    }
+                    group.leave()
+                }
+            }
+
+            group.notify(queue: .main) {
+                let newIDs = Set(allImages.map { $0.id })
+
+                // ⭐ FIRST RUN: initialize known IDs and skip detection
+                if self.knownGlobalImageIDs.isEmpty {
+                    self.knownGlobalImageIDs = newIDs
+                    completion(allImages)
+                    return
+                }
+
+                let added = newIDs.subtracting(self.knownGlobalImageIDs)
+
+                if let newID = added.first,
+                   let newImage = allImages.first(where: { $0.id == newID }) {
+
+                    let folderName = idToFolderName[newID] ?? ""
+                    let pending = PendingReview(item: newImage, folderName: folderName)
+                    self.reviewQueue.append(pending)
+
+                    // If nothing is being reviewed, start immediately
+                    if self.currentReview == nil {
+                        self.currentReview = pending
+                    }
+                }
+
+                self.knownGlobalImageIDs = newIDs
+
+                if let selected = self.selectedFolder {
+                    self.loadImagesInDateFolder(folderID: selected.id, token: token) { items in
+                        DispatchQueue.main.async {
+                            self.imagesInSelectedFolder = items
+                        }
+                    }
+                }
+
+                completion(allImages)
+            }
+        }
+    }
+    
+    func startGlobalWatcher(token: String) {
+        globalWatcherTimer?.invalidate()
+
+        DispatchQueue.main.async {
+            // fire once immediately
+            self.loadAllImages(token: token) { _ in }
+
+            // then poll every 5 seconds
+            self.globalWatcherTimer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { _ in
+                self.loadAllImages(token: token) { _ in }
+            }
+        }
+    }
+    
+    func advanceReviewQueue() {
+        // Remove the item that was just reviewed
+        if !reviewQueue.isEmpty {
+            reviewQueue.removeFirst()
+        }
+
+        // Move to the next item, or clear if none left
+        currentReview = reviewQueue.first
     }
 }
