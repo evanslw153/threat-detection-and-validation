@@ -45,6 +45,8 @@ struct ContentView: View {
         shared.loadSharedFolder(token: token, userEmail: email) { success in
             if success {
                 shared.loadImages(token: token)
+                
+                shared.startGlobalWatcher(token: token)
             }
         }
     }

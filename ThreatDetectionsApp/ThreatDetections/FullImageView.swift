@@ -15,9 +15,17 @@ struct FullImageView: View {
     @EnvironmentObject var shared: SharedFolderManager
     @State private var image: UIImage?
     @State private var isLoading = true
+    
+    var onLabelSaved: (() -> Void)? = nil
 
     var body: some View {
         VStack {
+            Text(item.name)
+                .font(.title3)
+                .bold()
+                .frame(maxWidth: .infinity)
+                .padding()
+
             Group {
                 if let img = image {
                     Image(uiImage: img)
@@ -39,6 +47,7 @@ struct FullImageView: View {
             HStack {
                 Button(action: {
                     shared.setLabel(for: key, value: "ValidThreat", token: token)
+                    onLabelSaved?()
                 }) {
                     Text("Valid Threat")
                         .foregroundColor(.white)
@@ -50,6 +59,7 @@ struct FullImageView: View {
 
                 Button(action: {
                     shared.setLabel(for: key, value: "NoThreat", token: token)
+                    onLabelSaved?()
                 }) {
                     Text("No Threat")
                         .foregroundColor(.white)
@@ -61,6 +71,7 @@ struct FullImageView: View {
                 
                 Button(action: {
                     shared.setLabel(for: key, value: "MislabeledThreat", token: token)
+                    onLabelSaved?()
                 }) {
                     Text("Mislabeled Threat")
                         .foregroundColor(.white)
