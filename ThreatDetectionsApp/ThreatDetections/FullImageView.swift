@@ -58,6 +58,17 @@ struct FullImageView: View {
                         .background(Color.green)
                         .cornerRadius(8)
                 }
+                
+                Button(action: {
+                    shared.setLabel(for: key, value: "MislabeledThreat", token: token)
+                }) {
+                    Text("Mislabeled Threat")
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Color.orange)
+                        .cornerRadius(8)
+                }
             }
             .padding(.vertical, 8)
         }

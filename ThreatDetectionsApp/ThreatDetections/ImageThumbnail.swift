@@ -37,10 +37,16 @@ struct ImageThumbnail: View {
 
                 if let label = label {
                     Circle()
-                        .fill(label == "ValidThreat" ? Color.red : Color.green)
+                        .fill(
+                            label == "ValidThreat" ? .red :
+                            label == "NoThreat" ? .green :
+                            label == "MislabeledThreat" ? .orange :
+                            .gray
+                        )
                         .frame(width: 14, height: 14)
                         .padding(4)
                 }
+
             }
             .onAppear(perform: loadThumbnail)
         }
