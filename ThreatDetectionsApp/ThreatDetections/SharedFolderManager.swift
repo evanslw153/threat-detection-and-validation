@@ -7,6 +7,9 @@
 
 import Foundation
 import Combine
+import VisionKit
+import Vision
+import CoreML
 
 struct DriveItem: Codable, Identifiable, Hashable, Equatable {
     let id: String
@@ -34,6 +37,9 @@ class SharedFolderManager: ObservableObject {
     
     @Published var reviewQueue: [PendingReview] = []
     @Published var currentReview: PendingReview? = nil
+    
+    @Published var descriptions: [String: String] = [:]   // "2026-04-13/image.jpg": "A knife on a table"
+    @Published var aiDescriptionsEnabled: Bool = true
 
     private var knownGlobalImageIDs: Set<String> = []
     private var globalWatcherTimer: Timer?
@@ -519,5 +525,89 @@ class SharedFolderManager: ObservableObject {
 
         // Move to the next item, or clear if none left
         currentReview = reviewQueue.first
+    }
+    
+    private var descriptionsURL: URL {
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        return docs.appendingPathComponent("descriptions.json")
+    }
+
+    func loadDescriptionsFromDisk() {
+        if let data = try? Data(contentsOf: descriptionsURL),
+           let dict = try? JSONDecoder().decode([String: String].self, from: data) {
+            descriptions = dict
+        }
+    }
+
+    func saveDescriptionsToDisk() {
+        if let data = try? JSONEncoder().encode(descriptions) {
+            try? data.write(to: descriptionsURL)
+        }
+    }
+
+    func setDescription(for key: String, value: String) {
+        descriptions[key] = value
+        saveDescriptionsToDisk()
+    }
+    
+    func detectObjects(in image: UIImage) async -> [String] {
+        guard let cg = image.cgImage else { return [] }
+
+        let request = VNClassifyImageRequest()
+        let handler = VNImageRequestHandler(cgImage: cg)
+
+        do {
+            try handler.perform([request])
+            let results = request.results ?? []
+
+            // Return top 3 labels
+            return results.prefix(3).map { $0.identifier }
+        } catch {
+            return []
+        }
+    }
+
+    func generateDescription(from objects: [String]) -> String {
+        // No objects detected
+        if objects.isEmpty {
+            return "No clearly identifiable objects were detected in this image. The scene may be low‑detail, obstructed, or outside the model’s recognition range."
+        }
+
+        // Normalize and sort objects by relevance
+        let normalized = objects.map { $0.lowercased() }
+        let primary = normalized.first!
+        let others = Array(normalized.dropFirst())
+
+        var sentences: [String] = []
+
+        // --- Sentence 1: Primary object ---
+        sentences.append("The most prominent object in the image appears to be a \(primary).")
+
+        // --- Sentence 2: Additional objects ---
+        if !others.isEmpty {
+            let list = others.joined(separator: ", ")
+            sentences.append("Additional elements detected include: \(list).")
+        }
+
+        // --- Sentence 3: Threat‑aware contextualization ---
+        let threatKeywords = ["knife", "gun", "weapon", "blade", "scissors", "firearm", "rifle", "pistol"]
+
+        if normalized.contains(where: { threatKeywords.contains($0) }) {
+            sentences.append("One or more objects may be associated with potential safety concerns. This does not confirm a threat, but indicates the need for closer review.")
+        }
+
+        // --- Sentence 4: Confidence disclaimer ---
+        sentences.append("This description is automatically generated and may not fully represent the scene.")
+
+        return sentences.joined(separator: " ")
+    }
+
+    func describeImage(_ image: UIImage) async -> String {
+        let objects = await detectObjects(in: image)
+        return generateDescription(from: objects)
+    }
+
+    init() {
+        loadDescriptionsFromDisk()
     }
 }
