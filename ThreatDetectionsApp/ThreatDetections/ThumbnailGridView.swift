@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ThumbnailGridView: View {
+    @ObservedObject var auth = AuthManager.shared
     @EnvironmentObject var shared: SharedFolderManager
 
 
@@ -20,6 +21,18 @@ struct ThumbnailGridView: View {
         contentView()
             .navigationTitle(shared.selectedFolder?.name ?? "")
             .toolbar {
+
+                // EMAIL — goes in the center/top region, NOT grouped
+                ToolbarItem(placement: .principal) {
+                    if let email = auth.userEmail {
+                        Text(email)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .allowsHitTesting(false)
+                    }
+                }
+
+                // SIGN OUT — stays on the trailing side
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Sign Out") {
                         AuthManager.shared.signOut()
@@ -30,6 +43,7 @@ struct ThumbnailGridView: View {
                     }
                 }
             }
+
             .onChange(of: shared.currentReview) { oldValue, newValue in
                 if let pending = newValue {
                     imageToReview = pending

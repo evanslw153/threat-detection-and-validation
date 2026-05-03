@@ -179,15 +179,30 @@ struct FullImageView: View {
                 }
                 .frame(maxHeight: .infinity)
 
-                VStack(alignment: .leading) {
+                VStack(alignment: .leading, spacing: 12) {
                     if let text = descriptionText {
                         Text(text)
-                            .padding()
+                            .padding(.bottom, 4)
+
+                        // 🔄 Regenerate Button
+                        Button(action: {
+                            if let img = image {
+                                Task { await regenerateDescription(for: img) }
+                            }
+                        }) {
+                            Text("Regenerate Description")
+                                .font(.caption)
+                                .foregroundColor(.blue)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.top, 4)
+
                     } else if shared.aiDescriptionsEnabled {
                         ProgressView("Generating description…")
                     }
                 }
                 .frame(width: 250)
+
             }
 
             // STATUS
@@ -282,6 +297,17 @@ struct FullImageView: View {
         // 3. Generate via SharedFolderManager (VNClassifyImageRequest pipeline)
         let desc = await shared.describeImage(uiImage)
         descriptionText = desc
+        shared.setDescription(for: key, value: desc)
+    }
+    
+    func regenerateDescription(for uiImage: UIImage) async {
+        let key = "\(folderName)/\(item.name)"
+
+        // Force new description
+        let desc = await shared.describeImage(uiImage)
+        descriptionText = desc
+
+        // Overwrite cache
         shared.setDescription(for: key, value: desc)
     }
 }
