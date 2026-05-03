@@ -7,10 +7,11 @@
 
 import SwiftUI
 
-struct ImageThumbnail: View {
+struct ImageThumbnail: View
+{
     let item: DriveItem
     let token: String
-    let folderName: String   // e.g. "2026-04-13"
+    let folderName: String   
 
     @EnvironmentObject var shared: SharedFolderManager
     @State private var image: UIImage?
@@ -21,21 +22,28 @@ struct ImageThumbnail: View {
 
         NavigationLink(
             destination: FullImageView(item: item, token: token, folderName: folderName)
-        ) {
-            ZStack(alignment: .topTrailing) {
-                Group {
-                    if let img = image {
+        )
+        {
+            ZStack(alignment: .topTrailing)
+            {
+                Group
+                {
+                    if let img = image
+                    {
                         Image(uiImage: img)
                             .resizable()
                             .scaledToFill()
-                    } else {
+                    }
+                    else
+                    {
                         Rectangle().fill(Color.gray.opacity(0.3))
                     }
                 }
                 .frame(width: 120, height: 120)
                 .clipped()
 
-                if let label = label {
+                if let label = label
+                {
                     Circle()
                         .fill(
                             label == "ValidThreat" ? .red :
@@ -52,12 +60,15 @@ struct ImageThumbnail: View {
         }
     }
 
-    func loadThumbnail() {
+    func loadThumbnail()
+    {
         let base: String
 
         if let driveID = SharedFolderManager.shared.driveID {
             base = "https://graph.microsoft.com/v1.0/drives/\(driveID)/items/\(item.id)"
-        } else {
+        }
+        else
+        {
             base = "https://graph.microsoft.com/v1.0/me/drive/items/\(item.id)"
         }
 

@@ -7,19 +7,25 @@
 
 import SwiftUI
 
-struct FolderListView: View {
+struct FolderListView: View
+{
     @ObservedObject var auth = AuthManager.shared
     @EnvironmentObject var shared: SharedFolderManager
 
-    var body: some View {
+    var body: some View
+    {
         List(shared.dateFolders, id: \.id) { item in
-            Button {
+            Button
+            {
                 shared.selectedFolder = item
 
-                if let token = auth.accessToken {
+                if let token = auth.accessToken
+                {
                     shared.selectFolder(item, token: token)
                 }
-            } label: {
+            }
+            label:
+            {
                 Text(item.name)
             }
         }

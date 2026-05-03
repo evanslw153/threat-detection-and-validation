@@ -72,8 +72,10 @@ class AuthManager: ObservableObject
         }
     }
     
-    func signOut() {
-        DispatchQueue.main.async {
+    func signOut()
+    {
+        DispatchQueue.main.async
+        {
             self.accessToken = nil
             self.userEmail = nil
         }

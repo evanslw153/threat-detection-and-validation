@@ -7,143 +7,7 @@
 
 import SwiftUI
 
-//struct FullImageView: View {
-//    let item: DriveItem
-//    let token: String
-//    let folderName: String   // e.g. "2026-04-13"
-//
-//    @EnvironmentObject var shared: SharedFolderManager
-//    @State private var image: UIImage?
-//    @State private var isLoading = true
-//    @State private var descriptionText: String?
-//    
-//    var onLabelSaved: (() -> Void)? = nil
-//
-//    var body: some View {
-//        VStack {
-//            Text(item.name)
-//                .font(.title3)
-//                .bold()
-//                .frame(maxWidth: .infinity)
-//                .padding()
-//            
-//            HStack() {
-//                Group {
-//                    if let img = image {
-//                        Image(uiImage: img)
-//                            .resizable()
-//                            .scaledToFit()
-//                    } else {
-//                        ProgressView("Loading...")
-//                    }
-//                }
-//                .frame(maxHeight: .infinity)
-//                
-//                VStack(alignment: .leading) {
-//                    if let text = descriptionText {
-//                        Text(text)
-//                            .padding()
-//                    } else {
-//                        ProgressView("Generating description…")
-//                    }
-//                }
-//                .frame(width: 250)
-//            }
-//
-//            let key = "\(folderName)/\(item.name)"
-//            let currentLabel = shared.getLabel(for: key) ?? "Unlabeled"
-//
-//            Text("Status: \(currentLabel)")
-//                .font(.footnote)
-//                .padding(.top, 4)
-//
-//            HStack {
-//                Button(action: {
-//                    shared.setLabel(for: key, value: "ValidThreat", token: token)
-//                    onLabelSaved?()
-//                }) {
-//                    Text("Valid Threat")
-//                        .foregroundColor(.white)
-//                        .padding(.horizontal, 16)
-//                        .padding(.vertical, 8)
-//                        .background(Color.red)
-//                        .cornerRadius(8)
-//                }
-//
-//                Button(action: {
-//                    shared.setLabel(for: key, value: "NoThreat", token: token)
-//                    onLabelSaved?()
-//                }) {
-//                    Text("No Threat")
-//                        .foregroundColor(.white)
-//                        .padding(.horizontal, 16)
-//                        .padding(.vertical, 8)
-//                        .background(Color.green)
-//                        .cornerRadius(8)
-//                }
-//                
-//                Button(action: {
-//                    shared.setLabel(for: key, value: "MislabeledThreat", token: token)
-//                    onLabelSaved?()
-//                }) {
-//                    Text("Mislabeled Threat")
-//                        .foregroundColor(.white)
-//                        .padding(.horizontal, 16)
-//                        .padding(.vertical, 8)
-//                        .background(Color.orange)
-//                        .cornerRadius(8)
-//                }
-//            }
-//            .padding(.vertical, 8)
-//        }
-//        .padding()
-//        .onAppear(perform: loadFullImage)
-//        .task {
-//                await loadDescription()
-//            }
-//    }
-//
-//    func loadFullImage() {
-//        let base: String
-//
-//        if let driveID = SharedFolderManager.shared.driveID {
-//            base = "https://graph.microsoft.com/v1.0/drives/\(driveID)/items/\(item.id)"
-//        } else {
-//            base = "https://graph.microsoft.com/v1.0/me/drive/items/\(item.id)"
-//        }
-//
-//        let url = URL(string: "\(base)/content")!
-//
-//        var req = URLRequest(url: url)
-//        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-//
-//        URLSession.shared.dataTask(with: req) { data, _, _ in
-//            if let data = data, let ui = UIImage(data: data) {
-//                DispatchQueue.main.async { image = ui }
-//            }
-//        }.resume()
-//    }
-//    
-//    func loadDescription() async {
-//        let key = "\(folderName)/\(item.name)"
-//        
-//        // 1. Check cache
-//        if let cached = shared.descriptions[key] {
-//            descriptionText = cached
-//            return
-//        }
-//        
-//        // 2. If disabled, don’t generate
-//        if !shared.aiDescriptionsEnabled { return }
-//        
-//        // 3. Generate using Apple Intelligence
-//        if let img = image,
-//           let desc = await shared.generateDescription(for: img) {
-//            descriptionText = desc
-//            shared.setDescription(for: key, value: desc)
-//        }
-//    }
-//}
+
 
 struct FullImageView: View {
     let item: DriveItem
@@ -157,39 +21,52 @@ struct FullImageView: View {
 
     var onLabelSaved: (() -> Void)? = nil
 
-    var body: some View {
-        VStack {
-            // TITLE
+    var body: some View
+    {
+        VStack
+        {
+            
             Text(item.name)
                 .font(.title3)
                 .bold()
                 .frame(maxWidth: .infinity)
                 .padding()
 
-            // IMAGE + DESCRIPTION SIDE BY SIDE
-            HStack {
-                Group {
-                    if let img = image {
+            
+            HStack
+            {
+                Group
+                {
+                    if let img = image
+                    {
                         Image(uiImage: img)
                             .resizable()
                             .scaledToFit()
-                    } else {
+                    }
+                    else
+                    {
                         ProgressView("Loading...")
                     }
                 }
                 .frame(maxHeight: .infinity)
 
-                VStack(alignment: .leading, spacing: 12) {
-                    if let text = descriptionText {
+                VStack(alignment: .leading, spacing: 12)
+                {
+                    if let text = descriptionText
+                    {
                         Text(text)
                             .padding(.bottom, 4)
 
-                        // 🔄 Regenerate Button
-                        Button(action: {
-                            if let img = image {
+                        
+                        Button(action:
+                        {
+                            if let img = image
+                            {
                                 Task { await regenerateDescription(for: img) }
                             }
-                        }) {
+                            
+                        })
+                        {
                             Text("Regenerate Description")
                                 .font(.caption)
                                 .foregroundColor(.blue)
@@ -197,7 +74,9 @@ struct FullImageView: View {
                         .buttonStyle(.plain)
                         .padding(.top, 4)
 
-                    } else if shared.aiDescriptionsEnabled {
+                    }
+                    else if shared.aiDescriptionsEnabled
+                    {
                         ProgressView("Generating description…")
                     }
                 }
@@ -205,7 +84,7 @@ struct FullImageView: View {
 
             }
 
-            // STATUS
+            
             let key = "\(folderName)/\(item.name)"
             let currentLabel = shared.getLabel(for: key) ?? "Unlabeled"
 
@@ -213,12 +92,15 @@ struct FullImageView: View {
                 .font(.footnote)
                 .padding(.top, 4)
 
-            // LABEL BUTTONS
-            HStack {
-                Button(action: {
+            
+            HStack
+            {
+                Button(action:
+                {
                     shared.setLabel(for: key, value: "ValidThreat", token: token)
                     onLabelSaved?()
-                }) {
+                })
+                {
                     Text("Valid Threat")
                         .foregroundColor(.white)
                         .padding(.horizontal, 16)
@@ -227,10 +109,12 @@ struct FullImageView: View {
                         .cornerRadius(8)
                 }
 
-                Button(action: {
+                Button(action:
+                {
                     shared.setLabel(for: key, value: "NoThreat", token: token)
                     onLabelSaved?()
-                }) {
+                })
+                {
                     Text("No Threat")
                         .foregroundColor(.white)
                         .padding(.horizontal, 16)
@@ -239,10 +123,12 @@ struct FullImageView: View {
                         .cornerRadius(8)
                 }
 
-                Button(action: {
+                Button(action:
+                {
                     shared.setLabel(for: key, value: "MislabeledThreat", token: token)
                     onLabelSaved?()
-                }) {
+                })
+                {
                     Text("Mislabeled Threat")
                         .foregroundColor(.white)
                         .padding(.horizontal, 16)
@@ -257,12 +143,16 @@ struct FullImageView: View {
         .onAppear(perform: loadFullImage)
     }
 
-    func loadFullImage() {
+    func loadFullImage()
+    {
         let base: String
 
-        if let driveID = SharedFolderManager.shared.driveID {
+        if let driveID = SharedFolderManager.shared.driveID
+        {
             base = "https://graph.microsoft.com/v1.0/drives/\(driveID)/items/\(item.id)"
-        } else {
+        }
+        else
+        {
             base = "https://graph.microsoft.com/v1.0/me/drive/items/\(item.id)"
         }
 
@@ -272,8 +162,10 @@ struct FullImageView: View {
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
         URLSession.shared.dataTask(with: req) { data, _, _ in
-            if let data = data, let ui = UIImage(data: data) {
-                DispatchQueue.main.async {
+            if let data = data, let ui = UIImage(data: data)
+            {
+                DispatchQueue.main.async
+                {
                     image = ui
                     isLoading = false
                     Task { await loadDescription(for: ui) }
@@ -282,11 +174,13 @@ struct FullImageView: View {
         }.resume()
     }
 
-    func loadDescription(for uiImage: UIImage) async {
+    func loadDescription(for uiImage: UIImage) async
+    {
         let key = "\(folderName)/\(item.name)"
 
         // 1. Cache
-        if let cached = shared.descriptions[key] {
+        if let cached = shared.descriptions[key]
+        {
             descriptionText = cached
             return
         }
@@ -300,7 +194,8 @@ struct FullImageView: View {
         shared.setDescription(for: key, value: desc)
     }
     
-    func regenerateDescription(for uiImage: UIImage) async {
+    func regenerateDescription(for uiImage: UIImage) async
+    {
         let key = "\(folderName)/\(item.name)"
 
         // Force new description

@@ -51,7 +51,7 @@ struct SignInView: View
                             .fontWeight(.semibold)
                     }
                 }
-                .frame(maxWidth: .infinity, alignment: .center)   // <-- centers content
+                .frame(maxWidth: .infinity, alignment: .center)  
                 .padding()
             }
             .buttonStyle(.borderedProminent)
@@ -60,7 +60,7 @@ struct SignInView: View
             
             Spacer()
 
-            Text("Version 1")
+            Text("Version 2.4.7")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .padding(.bottom, 20)

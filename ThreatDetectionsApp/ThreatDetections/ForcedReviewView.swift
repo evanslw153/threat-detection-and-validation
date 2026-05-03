@@ -7,7 +7,8 @@
 
 import SwiftUI
 
-struct ForcedReviewView: View {
+struct ForcedReviewView: View
+{
     let item: DriveItem
     let folderName: String
 
@@ -15,14 +16,16 @@ struct ForcedReviewView: View {
     @Environment(\.dismiss) var dismiss
     @ObservedObject var auth = AuthManager.shared
 
-    var body: some View {
+    var body: some View
+    {
         FullImageView(
             item: item,
             token: auth.accessToken ?? "",
             folderName: folderName,
             onLabelSaved: { dismiss() }
         )
-        .onDisappear {
+        .onDisappear
+        {
             shared.advanceReviewQueue()
         }
 
