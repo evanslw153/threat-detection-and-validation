@@ -208,6 +208,31 @@ marimo/_lsp/
 __marimo__/
 
 
-.DS_Storedetectionenv/
+# Virtual environment
 detectionenv/
-detectionenv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Model weights
+*.pt
+
+# Camera output
+screenshots/
+
+# Secrets
+token_cache.bin
+
+# OS junk
+.DS_Store
+
+# Thonny / IDE junk
+.spyderproject
+.spyproject
+.ipynb_checkpoints
+
+# Environment files
+.env
+.envrc
+
