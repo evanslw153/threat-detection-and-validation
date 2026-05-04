@@ -1,0 +1,7 @@
+{
+  "client_id": "2253625d-b695-4cb2-9c49-fd1af0c897d6",
+  "tenant_id": "common",
+  "authority": "https://login.microsoftonline.com/common",
+  "scopes": ["Files.ReadWrite"],
+  "folder_root": "/ThreatDetections"
+}
