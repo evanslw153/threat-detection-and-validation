@@ -1,0 +1,5 @@
+{
+  "client_id": "2253625d-b695-4cb2-9c49-fd1af0c897d6",
+  "redirect_uri": "msauth.com.evanslw153.WeaponDetectionApp1://auth",
+  "authority": "https://login.microsoftonline.com/common"
+}
